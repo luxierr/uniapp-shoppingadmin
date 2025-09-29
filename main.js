@@ -3,6 +3,7 @@ import store from './store'
 import plugin from './js_sdk/uni-admin/plugin'
 import messages from './i18n/index.js'
 
+
 const lang = uni.getLocale()
 // #ifndef VUE3
 import Vue from 'vue'
@@ -15,6 +16,7 @@ const i18n = new VueI18n({
   messages, // 设置地区信息
 })
 Vue.use(plugin)
+
 App.mpType = 'app'
 const app = new Vue({
   i18n,
@@ -36,6 +38,7 @@ export function createApp() {
   app.use(i18n)
   app.use(plugin)
   app.use(store)
+ 
   return {
     app
   }

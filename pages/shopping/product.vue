@@ -45,9 +45,6 @@
 
 				</uni-table>
 			</view>
-
-
-
 		</view>
 
 

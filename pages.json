@@ -166,6 +166,12 @@
 			{
 				"navigationBarTitleText" : ""
 			}
+		},
+		{
+			"path": "pages/posts/setposts",
+			"style": {
+				"navigationBarTitleText": "发布动态"
+			}
 		}
 	],
 	"subPackages": [{
