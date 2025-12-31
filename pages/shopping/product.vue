@@ -75,7 +75,7 @@
 								<uni-easyinput v-model="productdata.inventory" placeholder="请输入商品库存" />
 							</view>
 						</uni-forms-item>
-						<uni-forms-item label="商品变体">
+						<!-- <uni-forms-item label="商品变体">
 							<scroll-view style="height: 140px; overflow-y: auto;" scroll-y="true">
 								<view>
 									<view v-for="(variant, index) in productdata.variants" :key="index" class="variant-row">
@@ -93,7 +93,7 @@
 									<button type="primary" @tap="addVariant" size="mini">+ 添加变体</button>
 								</view>
 							</scroll-view>
-						</uni-forms-item>
+						</uni-forms-item> -->
 						<uni-forms-item label="是否上架">
 							<switch :checked="productdata.islist" />
 						</uni-forms-item>
