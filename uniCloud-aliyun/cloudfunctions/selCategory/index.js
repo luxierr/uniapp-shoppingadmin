@@ -34,13 +34,13 @@ exports.main = async (event, context) => {
 		// 执行查询
 		const res = await query.get();
 
-		// // 统计符合条件的总数
-		// const countRes = await query.count();
+		// 统计符合条件的总数
+		const countRes = await query.count();
 
 		return {
 			success: true,
 			data: res.data,
-			// total: countRes.total,
+			total: countRes.total,
 			message: key ? `包含"${key}"的分类查询成功` : '全部分类查询成功'
 		};
 

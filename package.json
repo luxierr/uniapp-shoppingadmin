@@ -116,6 +116,7 @@
     }
   },
   "dependencies": {
-    "@dcloudio/uni-ui": "^1.5.11"
+    "@dcloudio/uni-ui": "^1.5.11",
+    "uuid": "^13.0.0"
   }
 }

@@ -19,7 +19,7 @@
 						</view>
 						<view class="postsbtnlinebox">
 							<view class="postsbtnbox">
-								<button type="primary" size="mini">修改</button>
+								<!-- <button type="primary" size="mini">修改</button> -->
 								<button type="warn" size="mini" @click="delposts(item)">删除</button>
 							</view>
 						</view>

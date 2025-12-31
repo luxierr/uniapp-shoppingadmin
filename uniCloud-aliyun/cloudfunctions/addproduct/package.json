@@ -1,7 +1,9 @@
 {
   "name": "addproduct",
-  "dependencies": {},
   "extensions": {
     "uni-cloud-jql": {}
+  },
+  "dependencies": {
+    "uuid": "^3.4.0"
   }
 }

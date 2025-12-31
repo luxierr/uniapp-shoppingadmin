@@ -1,6 +1,8 @@
 {
   "name": "reproduct",
-  "dependencies": {},
+  "dependencies": {
+    "uuid": "^3.4.0"
+  },
   "extensions": {
     "uni-cloud-jql": {}
   }

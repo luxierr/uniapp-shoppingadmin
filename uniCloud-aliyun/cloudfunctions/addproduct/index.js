@@ -1,6 +1,8 @@
 // 云函数入口文件
 const db = uniCloud.database()
 const dbCmd = db.command
+// 引入uuid生成唯一ID
+const { v4: uuidv4 } = require('uuid')
 
 // 云函数入口函数
 exports.main = async (event, context) => {
@@ -17,41 +19,42 @@ exports.main = async (event, context) => {
       }
     }
     
-    // 处理变体数据：过滤掉所有字段都为空的变体
+    // 处理变体数据：过滤空变体并生成唯一ID（避免被空字符串覆盖）
     const filteredVariants = (productdata.variants || []).filter(variant => {
-      // 检查变体对象是否所有字段都为空
       const isEmpty = Object.keys(variant).every(key => {
         const value = variant[key]
         return value === '' || value === null || value === undefined
       })
       return !isEmpty
+    }).map(variant => {
+      const vid = variant._id ? variant._id : uuidv4()
+      return {
+        ...variant,
+        _id: vid,
+        price: variant.price ? Number(variant.price) : 0,
+        stock: variant.stock ? Number(variant.stock) : 0
+      }
     })
     
-    // 获取当前时间（适配阿里云环境）
+    // 获取当前时间
     const currentTime = new Date()
-    const timeStr = currentTime.toISOString() // 转换为ISO标准时间字符串
+    const timeStr = currentTime.toISOString()
     
-    // 转换价格和库存为数字类型
+    // 生成商品唯一ID
+    const productId = uuidv4()
+
+    // 避免将前端传入的空字符串 _id 覆盖掉已生成的 ID，剥离 _id 与 variants 后重建对象
+    const { _id: incomingId, variants: incomingVariants, ...restProduct } = productdata || {}
+
+    // 处理商品数据（包含自定义ID）
     const processedData = {
-      ...productdata,
-      // 转换主价格为数字
+      ...restProduct,
+      _id: incomingId ? incomingId : productId, // 优先使用有效的前端 _id，否则使用生成的 productId
       price: productdata.price ? Number(productdata.price) : 0,
-      // 转换总库存为数字
       inventory: productdata.inventory ? Number(productdata.inventory) : 0,
-      // 使用过滤后的变体
-      variants: filteredVariants.map(variant => ({
-        ...variant,
-        // 转换变体价格为数字
-        price: variant.price ? Number(variant.price) : 0,
-        // 转换变体库存为数字
-        stock: variant.stock ? Number(variant.stock) : 0
-      })),
-      // 修改时间字段处理方式，适配阿里云
+      variants: filteredVariants, // 已包含变体ID
       createTime: timeStr,
-      updateTime: timeStr,
-      // 也可以使用时间戳
-      // createTime: currentTime.getTime(),
-      // updateTime: currentTime.getTime()
+      updateTime: timeStr
     }
     
     // 插入数据到数据库
@@ -62,7 +65,9 @@ exports.main = async (event, context) => {
       success: true,
       message: '商品数据保存成功',
       data: {
-        id: result.id
+        id: processedData._id, // 返回自定义商品ID
+        dbId: result.id, // 数据库自动生成的_id（可选）
+        variantIds: filteredVariants.map(v => v._id) // 返回所有变体 _id（可选）
       }
     }
   } catch (err) {
@@ -75,4 +80,3 @@ exports.main = async (event, context) => {
     }
   }
 }
-    
