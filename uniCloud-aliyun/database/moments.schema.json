@@ -1,0 +1,14 @@
+[
+  {
+    "IndexName": "publishTime",
+    "MgoKeySchema": {
+      "MgoIndexKeys": [
+        {
+          "Name": "publishTime",
+          "Direction": "-1"
+        }
+      ],
+      "MgoIsUnique": false
+    }
+  }
+]

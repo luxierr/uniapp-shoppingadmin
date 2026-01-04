@@ -1,72 +1,123 @@
 <template>
-	<view class="postsbody">
-		<view class="leftbox">
-			<scroll-view class="databox" scroll-y="true">
-				<view class="linebox">
-					<view class="showbox" v-for="(item,index) in postlist" :key="index">
-						<view class="contentbox">{{item.content}}</view>
-						<view class="showfilebox">
-							<view v-if="item.isimage">
-								<view class="imagebox">
-									<div v-for="(line,urlkey) in item.url" :key="urlkey">
-										<image :src="line" class="postsimage"></image>
-									</div>
-								</view>
-							</view>
-							<view v-if="!item.isimage">
-								<video id="myVideo" :src="item.url[0]" @error="videoErrorCallback" controls></video>
-							</view>
+	<view class="posts-container">
+		<!-- 左侧列表区域 -->
+		<view class="left-panel">
+			<view class="panel-header">
+				<text class="panel-title">动态列表</text>
+				<text class="count-badge">{{ postlist.length }} 条内容</text>
+			</view>
+			<scroll-view class="data-list" scroll-y="true">
+				<view class="post-card" v-for="(item,index) in postlist" :key="index">
+					<view class="post-content">{{ item.content || '无内容' }}</view>
+					
+					<view class="media-container">
+						<view v-if="item.isimage" class="image-grid">
+							<image 
+								:src="line" 
+								class="post-image"
+								mode="aspectFill"
+								v-for="(line,urlkey) in item.url" 
+								:key="urlkey"
+							></image>
 						</view>
-						<view class="postsbtnlinebox">
-							<view class="postsbtnbox">
-								<!-- <button type="primary" size="mini">修改</button> -->
-								<button type="warn" size="mini" @click="delposts(item)">删除</button>
-							</view>
+						<view v-if="!item.isimage" class="video-container">
+							<video 
+							    :src="item.url[0]" 
+							    @error="videoErrorCallback" 
+							    controls
+							    class="post-video"
+							    mode="aspectFill"
+							  ></video>
 						</view>
 					</view>
+					
+					<view class="post-actions">
+						<button 
+							type="warn" 
+							size="mini" 
+							@click="delposts(item)"
+							class="delete-btn"
+						>
+							删除
+						</button>
+					</view>
+				</view>
+				
+				<view class="empty-state" v-if="postlist.length === 0">
+					<text>暂无动态内容</text>
 				</view>
 			</scroll-view>
-
 		</view>
-		<view class="rightbox">
-			<view class="rightbox_title">发布动态</view>
-			<view class="setbox">
+
+		<!-- 右侧发布区域 -->
+		<view class="right-panel">
+			<view class="panel-header">
+				<text class="panel-title">发布动态</text>
+			</view>
+			<view class="form-container">
 				<uni-forms ref="baseForm" :modelValue="postdata">
-					<uni-forms-item label="动态内容">
-						<view class="inputbox">
-							<uni-easyinput type="textarea" v-model="postdata.content" placeholder="请输入自我介绍" />
-						</view>
+					<uni-forms-item label="动态内容" class="form-item">
+						<uni-easyinput 
+							type="textarea" 
+							v-model="postdata.content" 
+							placeholder="请输入动态内容..." 
+							class="content-input"
+							:rows="5"
+						/>
 					</uni-forms-item>
-					<uni-forms-item label="上传文件类型">
-						<radio-group @change="handleRadioChange">
-							<label>
-								<radio value="true" :checked="postdata.isimage === true" />上传图片
+					
+					<uni-forms-item label="上传类型" class="form-item">
+						<radio-group @change="handleRadioChange" class="radio-group">
+							<label class="radio-item">
+								<radio value="true" :checked="postdata.isimage === true" />
+								<text>图片</text>
 							</label>
-							<label>
-								<radio value="false" :checked="postdata.isimage === false" />上传视频
+							<label class="radio-item">
+								<radio value="false" :checked="postdata.isimage === false" />
+								<text>视频</text>
 							</label>
 						</radio-group>
 					</uni-forms-item>
-					<uni-forms-item label="上传文件">
-						<uni-section title="只选择图片" type="line" v-if="postdata.isimage">
-							<view class="example-body">
-								<uni-file-picker limit="9" title="最多选择9张图片" file-mediatype="image"
-									:imageStyles="imageStyles" @success="handleUploadSuccess" @fail="handleUploadFail"
-									@delete="handleDelFile"></uni-file-picker>
-							</view>
+					
+					<uni-forms-item label="上传文件" class="form-item">
+						<uni-section 
+							title="最多选择9张图片" 
+							type="line" 
+							v-if="postdata.isimage"
+							class="upload-section"
+						>
+							<uni-file-picker 
+								limit="9" 
+								file-mediatype="image"
+								:imageStyles="imageStyles" 
+								@success="handleUploadSuccess" 
+								@fail="handleUploadFail"
+								@delete="handleDelFile"
+								class="file-picker"
+							></uni-file-picker>
 						</uni-section>
-						<uni-section title="只选择视频" type="line" v-if="!postdata.isimage">
-							<view class="example-body">
-								<uni-file-picker limit="1" file-mediatype="video" title="最多选择9个视频"
-									@success="handleUploadSuccess" @fail="handleUploadFail"
-									@delete="handleDelFile"></uni-file-picker>
-							</view>
+						
+						<uni-section 
+							title="选择1个视频" 
+							type="line" 
+							v-if="!postdata.isimage"
+							class="upload-section"
+						>
+							<uni-file-picker 
+								limit="1" 
+								file-mediatype="video" 
+								@success="handleUploadSuccess" 
+								@fail="handleUploadFail"
+								@delete="handleDelFile"
+								class="file-picker"
+							></uni-file-picker>
 						</uni-section>
 					</uni-forms-item>
 				</uni-forms>
-				<view class="btnbox">
-					<button type="primary" @click="addposts">发布</button>
-					<button type="default" @click="cleandata">清空</button>
+				
+				<view class="button-group">
+					<button type="primary" @click="addposts" class="main-btn">发布</button>
+					<button type="default" @click="cleandata" class="secondary-btn">清空</button>
 				</view>
 			</view>
 		</view>
@@ -239,7 +290,7 @@
 						console.log(row._id)
 						uniCloud.callFunction({
 							name: 'delposts',
-							data::{
+							data:{
 								_id: row._id
 							}
 						}).then(res => {
@@ -271,114 +322,230 @@
 	}
 </script>
 
-<style>
-	.postsbody {
-		border: 1px solid red;
-		height: 90vh;
-		display: flex;
-		flex-direction: row;
-	}
+<style scoped>
+/* 基础样式重置 */
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
 
-	.leftbox {
-		width: 40%;
-		display: flex;
+.posts-container {
+	display: flex;
+	height: 100vh;
+	background-color: #f5f7fa;
+	overflow: hidden;
+}
+
+/* 左侧面板样式 */
+.left-panel {
+	width: 45%;
+	height: 100%;
+	border-right: 1px solid #e5e7eb;
+	background-color: #fff;
+	overflow: hidden;
+}
+
+/* 右侧面板样式 */
+.right-panel {
+	width: 55%;
+	height: 100%;
+	background-color: #fff;
+	overflow: hidden;
+}
+
+/* 面板标题栏 */
+.panel-header {
+	padding: 16px 20px;
+	border-bottom: 1px solid #e5e7eb;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.panel-title {
+	font-size: 18px;
+	font-weight: 600;
+	color: #1d2129;
+}
+
+.count-badge {
+	font-size: 14px;
+	color: #86909c;
+	background-color: #f2f3f5;
+	padding: 2px 8px;
+	border-radius: 12px;
+}
+
+/* 列表区域 */
+.data-list {
+	height: calc(100% - 60px);
+	padding: 16px;
+}
+
+.post-card {
+	background-color: #fff;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+	padding: 16px;
+	margin-bottom: 16px;
+	transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.post-card:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.post-content {
+	font-size: 15px;
+	color: #1d2129;
+	line-height: 1.6;
+	margin-bottom: 12px;
+	word-break: break-all;
+}
+
+/* 媒体内容容器 */
+.media-container {
+	margin-bottom: 12px;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.image-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.post-image {
+	width: 80px;
+	height: 80px;
+	border-radius: 4px;
+	object-fit: cover;
+}
+
+.video-container {
+	width: 100%;
+	max-height: 200px;
+}
+
+.post-video {
+	width: 100%; /* 或具体宽度，如 300px */
+	height: 200px; /* 确保高度足够显示 */
+	object-fit: cover; /* 配合 mode="aspectFill" 保持比例 */
+}
+
+/* 操作按钮 */
+.post-actions {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.delete-btn {
+	border-radius: 4px;
+	font-size: 14px;
+	padding: 4px 10px;
+}
+
+/* 空状态 */
+.empty-state {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 200px;
+	color: #86909c;
+	font-size: 16px;
+	background-color: #f7f8fa;
+	border-radius: 8px;
+}
+
+/* 表单容器 */
+.form-container {
+	padding: 20px;
+	height: calc(100% - 60px);
+	overflow-y: auto;
+}
+
+.form-item {
+	margin-bottom: 20px;
+}
+
+/* 输入框样式 */
+.content-input {
+	width: 100%;
+	border-radius: 6px;
+	border: 1px solid #e5e7eb;
+	padding: 10px;
+	font-size: 15px;
+}
+
+/* 单选框组 */
+.radio-group {
+	display: flex;
+	gap: 20px;
+	padding: 8px 0;
+}
+
+.radio-item {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: #1d2129;
+}
+
+/* 上传区域 */
+.upload-section {
+	margin-top: 8px;
+}
+
+.file-picker {
+	width: 100%;
+}
+
+/* 按钮组 */
+.button-group {
+	display: flex;
+	gap: 16px;
+	margin-top: 30px;
+}
+
+.main-btn, .secondary-btn {
+	flex: 1;
+	height: 44px;
+	border-radius: 6px;
+	font-size: 16px;
+}
+
+.main-btn {
+	background-color: #007aff;
+	color: #fff;
+}
+
+.secondary-btn {
+	background-color: #f5f7fa;
+	color: #1d2129;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+	.posts-container {
 		flex-direction: column;
-		align-items: center;
 	}
-
-	.rightbox {
-		width: 60%;
-		border-left: 1px solid #ccc;
-	}
-
-	.databox {
-		/* border: 1px solid red; */
-		height: 90vh;
-	}
-
-	.linebox {
+	
+	.left-panel, .right-panel {
 		width: 100%;
-		/* border: 1px solid black; */
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		/* justify-items: center; */
+		height: auto;
 	}
-
-	.showbox {
-		width: 90%;
-		/* border: 1px solid #ccc; */
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-		/* height: 20vh; */
-		border-radius: 10px;
-		margin-top: 2vh;
+	
+	.left-panel {
+		max-height: 50vh;
+		border-right: none;
+		border-bottom: 1px solid #e5e7eb;
 	}
-
-
-
-	.rightbox_title {
-		font-size: 22px;
-		padding-left: 1vw;
-		margin-top: 1vh;
-
+	
+	.right-panel {
+		max-height: 50vh;
 	}
-
-	.setbox {
-		margin-top: 2vh;
-		padding-left: 1vw;
-		padding-right: 1vw;
-	}
-
-	.inputbox {
-		width: 80%;
-	}
-
-	.btnbox {
-		width: 100%;
-		display: flex;
-		flex-direction: row;
-		/* border: 1px solid red; */
-	}
-
-	.contentbox {
-		/* border: 1px solid red; */
-		margin: 10px;
-	}
-
-	.showfilebox {
-		/* border: 1px solid blue; */
-	}
-
-	.imagebox {
-		/* border: 1px solid green; */
-		display: flex;
-		flex-direction: row;
-		margin: 16px 10px;
-		flex-wrap: wrap;
-	}
-
-	.postsimage {
-		max-height: 120px;
-		max-width: 120px;
-		margin-right: 5px;
-	}
-
-	.postsbtnlinebox {
-		width: 100%;
-		/* border: 1px solid red; */
-		margin-bottom: 10px;
-		display: flex;
-		align-items: center;
-		/* 垂直居中 */
-		justify-content: flex-end;
-		/* 水平靠右 */
-		padding-right: 10px;
-		/* 右边留白 */
-		box-sizing: border-box;
-		/* 避免宽度溢出 */
-	}
-
-	.postsbtnbox button {
-		margin-left: 10px;
-	}
+}
 </style>
